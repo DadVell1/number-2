@@ -117,71 +117,105 @@
         </form>
 
         <ul id="inventoryList"></ul>
+        <h3>Inventory Visualization</h3>
+<canvas id="inventoryChart"></canvas>
+
     </div>
 
-    <script>
-        const form = document.getElementById('inventoryForm');
-        const itemNameInput = document.getElementById('itemName');
-        const quantityInput = document.getElementById('quantity');
-        const inventoryList = document.getElementById('inventoryList');
-        const errorMessage = document.getElementById('errorMessage');
+  <script>
+const form = document.getElementById('inventoryForm');
+const itemNameInput = document.getElementById('itemName');
+const quantityInput = document.getElementById('quantity');
+const inventoryList = document.getElementById('inventoryList');
+const errorMessage = document.getElementById('errorMessage');
 
-        let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
+let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
+let chart;
 
-        function saveInventory() {
-            localStorage.setItem('inventory', JSON.stringify(inventory));
-        }
+function saveInventory() {
+    localStorage.setItem('inventory', JSON.stringify(inventory));
+}
 
-        function renderInventory() {
-            inventoryList.innerHTML = '';
+function renderInventory() {
+    inventoryList.innerHTML = '';
 
-            inventory.forEach(item => {
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    <span>${item.name}</span>
-                    <span>Qty: ${item.quantity}</span>
-                `;
-                inventoryList.appendChild(li);
-            });
-        }
+    inventory.forEach(item => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <span>${item.name}</span>
+            <span>Qty: ${item.quantity}</span>
+        `;
+        inventoryList.appendChild(li);
+    });
 
-        function isDuplicate(name) {
-            return inventory.some(item => item.name.toLowerCase() === name.toLowerCase());
-        }
+    updateChart();
+}
 
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
+function isDuplicate(name) {
+    return inventory.some(item =>
+        item.name.toLowerCase() === name.toLowerCase()
+    );
+}
 
-            const name = itemNameInput.value.trim();
-            const quantity = parseInt(quantityInput.value);
+function updateChart() {
+    const labels = inventory.map(item => item.name);
+    const data = inventory.map(item => item.quantity);
 
-            errorMessage.textContent = '';
+    const ctx = document.getElementById('inventoryChart').getContext('2d');
 
-            if (quantity < 0) {
-                errorMessage.textContent = 'Quantity cannot be negative.';
-                return;
+    if (chart) {
+        chart.destroy();
+    }
+
+    chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Item Quantity',
+                data: data
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
             }
+        }
+    });
+}
 
-            if (isDuplicate(name)) {
-                errorMessage.textContent = 'Item already exists in inventory.';
-                return;
-            }
+form.addEventListener('submit', function(e) {
+    e.preventDefault();
 
-            const newItem = {
-                name: name,
-                quantity: quantity
-            };
+    const name = itemNameInput.value.trim();
+    const quantity = parseInt(quantityInput.value);
 
-            inventory.push(newItem);
-            saveInventory();
-            renderInventory();
+    errorMessage.textContent = '';
 
-            form.reset();
-        });
+    if (quantity < 0) {
+        errorMessage.textContent = 'Quantity cannot be negative.';
+        return;
+    }
 
-        // Initial render on page load
-        renderInventory();
-    </script>
+    if (isDuplicate(name)) {
+        errorMessage.textContent = 'Item already exists in inventory.';
+        return;
+    }
+
+    inventory.push({ name, quantity });
+    saveInventory();
+    renderInventory();
+    form.reset();
+});
+
+renderInventory();
+</script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 
 </body>
 </html>
