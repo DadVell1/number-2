@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+
 <meta charset="UTF-8">
 <title>Inventory Command Center</title>
 
@@ -9,93 +9,115 @@
 
 <style>
 
-body {
-    margin:0;
-    font-family: Arial, sans-serif;
-    background-color:#1f2937;
-    color:#f9fafb;
+body{
+margin:0;
+font-family:Arial, sans-serif;
+background:#1f2937;
+color:#f9fafb;
 }
 
-nav {
-    background:#111827;
-    padding:15px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+nav{
+background:#111827;
+padding:15px;
+display:flex;
+justify-content:space-between;
+align-items:center;
 }
 
 nav a{
-    color:white;
-    text-decoration:none;
-    margin-left:20px;
+color:white;
+text-decoration:none;
+margin-left:20px;
 }
 
 .container{
-    width:80%;
-    margin:auto;
-    padding:20px;
+width:80%;
+margin:auto;
+padding:20px;
 }
 
 input{
-    padding:8px;
-    margin:5px;
+padding:8px;
+margin:5px;
 }
 
 button{
-    padding:8px 12px;
-    margin:5px;
-    cursor:pointer;
+padding:8px 12px;
+margin:5px;
+cursor:pointer;
 }
 
 ul{
-    list-style:none;
-    padding:0;
+list-style:none;
+padding:0;
 }
 
 li{
-    padding:6px 0;
+padding:6px 0;
 }
 
 canvas{
-    margin-top:20px;
+margin-top:20px;
+}
+
+.error{
+color:red;
 }
 
 </style>
+
 </head>
 
 <body>
 
 <nav>
-<h2>ABC Logistics</h2>
+<h2>ABC Logistics Dashboard</h2>
+
 <div>
 <a href="index.html">Dashboard</a>
 <a href="about.html">Developer Profile</a>
 </div>
+
 </nav>
 
 <div class="container">
 
-<h2>Inventory Dashboard</h2>
+<h2>Inventory Command Center</h2>
 
 <form id="inventoryForm">
 
-<input type="text" id="itemName" placeholder="Item Name" required>
+<input
+type="text"
+id="itemName"
+placeholder="Item Name"
+required
+>
 
-<input type="number" id="itemQuantity" placeholder="Quantity" required>
+<input
+type="number"
+id="itemQuantity"
+placeholder="Quantity"
+required
+min="0"
+>
 
 <button type="submit">Add Item</button>
 
-<button type="button" onclick="clearInventory()">Clear All</button>
+<button type="button" onclick="clearInventory()">
+Clear All Items
+</button>
 
 </form>
 
-<p id="errorMessage" style="color:red;"></p>
+<p id="errorMessage" class="error"></p>
 
 <h3>Inventory List</h3>
 
 <ul id="inventoryList"></ul>
 
-<button onclick="toggleChart()">Toggle Chart (Bar / Pie)</button>
+<button onclick="toggleChart()">
+Toggle Chart (Bar / Pie)
+</button>
 
 <canvas id="inventoryChart"></canvas>
 
@@ -105,43 +127,57 @@ canvas{
 
 let inventory = JSON.parse(localStorage.getItem("inventory")) || [];
 
-let chartType = "bar";
 let chart;
+let chartType = "bar";
 
 const form = document.getElementById("inventoryForm");
 const list = document.getElementById("inventoryList");
 const errorMessage = document.getElementById("errorMessage");
 
 function saveInventory(){
-    localStorage.setItem("inventory", JSON.stringify(inventory));
+localStorage.setItem("inventory", JSON.stringify(inventory));
 }
 
 function isDuplicate(name){
-    return inventory.some(item => item.name.toLowerCase() === name.toLowerCase());
+return inventory.some(
+item => item.name.toLowerCase() === name.toLowerCase()
+);
 }
 
 form.addEventListener("submit", function(e){
 
 e.preventDefault();
 
-const name = document.getElementById("itemName").value.trim();
-const quantity = Number(document.getElementById("itemQuantity").value);
+const name =
+document.getElementById("itemName").value.trim();
 
-errorMessage.textContent="";
+const quantity =
+Number(document.getElementById("itemQuantity").value);
+
+errorMessage.textContent = "";
 
 if(quantity < 0){
-    errorMessage.textContent="Quantity cannot be negative.";
-    return;
+
+errorMessage.textContent =
+"Quantity cannot be negative.";
+
+return;
+
 }
 
 if(isDuplicate(name)){
-    errorMessage.textContent="Item already exists in inventory.";
-    return;
+
+errorMessage.textContent =
+"Item already exists.";
+
+return;
+
 }
 
 inventory.push({name, quantity});
 
 saveInventory();
+
 renderInventory();
 
 form.reset();
@@ -150,13 +186,14 @@ form.reset();
 
 function renderInventory(){
 
-list.innerHTML="";
+list.innerHTML = "";
 
-inventory.forEach(item=>{
+inventory.forEach(item => {
 
 const li = document.createElement("li");
 
-li.textContent = `${item.name} : ${item.quantity}`;
+li.textContent =
+item.name + " : " + item.quantity;
 
 list.appendChild(li);
 
@@ -168,24 +205,26 @@ renderChart();
 
 function renderChart(){
 
-const labels = inventory.map(item=>item.name);
-const data = inventory.map(item=>item.quantity);
+const labels = inventory.map(item => item.name);
 
-const ctx = document.getElementById("inventoryChart");
+const data = inventory.map(item => item.quantity);
+
+const ctx =
+document.getElementById("inventoryChart");
 
 if(chart){
-    chart.destroy();
+chart.destroy();
 }
 
-chart = new Chart(ctx, {
+chart = new Chart(ctx,{
 
 type: chartType,
 
 data:{
-labels:labels,
+labels: labels,
 datasets:[{
 label:"Inventory Quantity",
-data:data,
+data: data,
 backgroundColor:[
 "#3b82f6",
 "#10b981",
@@ -204,9 +243,13 @@ backgroundColor:[
 function toggleChart(){
 
 if(chartType === "bar"){
+
 chartType = "pie";
+
 }else{
+
 chartType = "bar";
+
 }
 
 renderChart();
@@ -216,6 +259,7 @@ renderChart();
 function clearInventory(){
 
 inventory = [];
+
 localStorage.removeItem("inventory");
 
 renderInventory();
